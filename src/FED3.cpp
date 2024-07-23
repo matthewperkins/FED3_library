@@ -656,6 +656,9 @@ void FED3::UpdateDisplay() {
   if (DisplayTimed==true) {  //If it's a timed Feeding Session
     DisplayTimedFeeding();
   }
+  if (DisplayMeal==true) {  //If it's a timed Feeding Session
+    DisplayMealFeeding();
+  }
   
   DisplayBattery();
   DisplayDateTime();
@@ -849,6 +852,19 @@ void FED3::DisplayTimedFeeding(){
   display.print (":00");
 }
 
+void FED3::DisplayMealFeeding(){
+  int ii;
+  for (ii=0; ii<NMeals; ii++){
+    display.setCursor(30,55+ii*15);
+    display.print (mealStarts[ii]);
+    display.print (":00 to ");
+    display.print (mealEnds[ii]);
+    display.print (":00");
+  }
+  display.refresh();
+}
+  
+
 void FED3::DisplayMinPoke(){
   display.setCursor(115, 65);
   display.print ((minPokeTime/1000.0),1);
@@ -957,6 +973,76 @@ void FED3::CreateFile() {
   stopfile = SD.open("stop.csv", FILE_READ);
   timedEnd = stopfile.parseInt();
   stopfile.close();
+
+  maxNPelletFile = SD.open("maxNPelletFile.csv", FILE_WRITE);
+  maxNPelletFile = SD.open("maxNPelletFile.csv", FILE_READ);
+  maxNPellet = maxNPelletFile.parseInt();
+  maxNPelletFile.close();
+
+  NMealsFile = SD.open("NMeals.csv", FILE_WRITE);
+  NMealsFile = SD.open("NMeals.csv", FILE_READ);
+  NMeals = NMealsFile.parseInt();
+  NMealsFile.close();
+
+  mealStartfile0 = SD.open("mealStart0.csv", FILE_WRITE);
+  mealStartfile0 = SD.open("mealStart0.csv", FILE_READ);
+  mealStarts[0] = mealStartfile0.parseInt();
+  mealStartfile0.close();
+
+  mealStartfile1 = SD.open("mealStart1.csv", FILE_WRITE);
+  mealStartfile1 = SD.open("mealStart1.csv", FILE_READ);
+  mealStarts[1] = mealStartfile1.parseInt();
+  mealStartfile1.close();
+
+  mealStartfile2 = SD.open("mealStart2.csv", FILE_WRITE);
+  mealStartfile2 = SD.open("mealStart2.csv", FILE_READ);
+  mealStarts[2] = mealStartfile2.parseInt();
+  mealStartfile2.close();
+
+  mealStartfile3 = SD.open("mealStart3.csv", FILE_WRITE);
+  mealStartfile3 = SD.open("mealStart3.csv", FILE_READ);
+  mealStarts[3] = mealStartfile3.parseInt();
+  mealStartfile3.close();
+
+  mealStartfile4 = SD.open("mealStart4.csv", FILE_WRITE);
+  mealStartfile4 = SD.open("mealStart4.csv", FILE_READ);
+  mealStarts[4] = mealStartfile4.parseInt();
+  mealStartfile4.close();
+
+  mealStartfile5 = SD.open("mealStart5.csv", FILE_WRITE);
+  mealStartfile5 = SD.open("mealStart5.csv", FILE_READ);
+  mealStarts[5] = mealStartfile5.parseInt();
+  mealStartfile5.close();
+
+  mealEndfile0 = SD.open("mealEnd0.csv", FILE_WRITE);
+  mealEndfile0 = SD.open("mealEnd0.csv", FILE_READ);
+  mealEnds[0] = mealEndfile0.parseInt();
+  mealEndfile0.close();
+
+  mealEndfile1 = SD.open("mealEnd1.csv", FILE_WRITE);
+  mealEndfile1 = SD.open("mealEnd1.csv", FILE_READ);
+  mealEnds[1] = mealEndfile1.parseInt();
+  mealEndfile1.close();
+
+  mealEndfile2 = SD.open("mealEnd2.csv", FILE_WRITE);
+  mealEndfile2 = SD.open("mealEnd2.csv", FILE_READ);
+  mealEnds[2] = mealEndfile2.parseInt();
+  mealEndfile2.close();
+
+  mealEndfile3 = SD.open("mealEnd3.csv", FILE_WRITE);
+  mealEndfile3 = SD.open("mealEnd3.csv", FILE_READ);
+  mealEnds[3] = mealEndfile3.parseInt();
+  mealEndfile3.close();
+
+  mealEndfile4 = SD.open("mealEnd4.csv", FILE_WRITE);
+  mealEndfile4 = SD.open("mealEnd4.csv", FILE_READ);
+  mealEnds[4] = mealEndfile4.parseInt();
+  mealEndfile4.close();
+
+  mealEndfile5 = SD.open("mealEnd5.csv", FILE_WRITE);
+  mealEndfile5 = SD.open("mealEnd5.csv", FILE_READ);
+  mealEnds[5] = mealEndfile5.parseInt();
+  mealEndfile5.close();
 
   // Name filename in format F###_MMDDYYNN, where MM is month, DD is day, YY is year, and NN is an incrementing number for the number of files initialized each day
   strcpy(filename, "FED_____________.CSV");  // placeholder filename
@@ -1461,6 +1547,18 @@ void FED3::ReadBatteryLevel() {
 }
 
 /**************************************************************************************************************************************************
+                                                                                               Timed Meal Functions
+**************************************************************************************************************************************************/
+
+void FED3::CheckTime(){
+  DateTime now = rtc.now();
+  currentHour = now.hour(); //useful for timed feeding sessions
+  currentMinute = now.minute(); //useful for timed feeding sessions
+  currentSecond = now.second(); //useful for timed feeding sessions
+  unixtime = now.unixtime();
+}
+
+/**************************************************************************************************************************************************
                                                                                                Interrupts and sleep
 **************************************************************************************************************************************************/
 void FED3::disableSleep(){
@@ -1633,6 +1731,7 @@ void FED3::FED3MenuScreen() {
   if (FEDmode == 9) display.print("Mode 10");
   if (FEDmode == 10) display.print("Mode 11");
   if (FEDmode == 11) display.print("Mode 12");
+  if (FEDmode == 12) display.print("Mode 13");
   DisplayMouse();
   display.clearDisplay();
   display.refresh();
@@ -1669,11 +1768,11 @@ void FED3::SelectMode() {
     tone (BUZZER, 2500, 200);
     colorWipe(strip.Color(2, 2, 0), 40); // Color wipe
     colorWipe(strip.Color(0, 0, 0), 20); // OFF
-    if (FEDmode == 12) FEDmode = 0;
+    if (FEDmode == 13) FEDmode = 0;
   }
 
   if (FEDmode < 0) FEDmode = 0;
-  if (FEDmode > 11) FEDmode = 11;
+  if (FEDmode > 12) FEDmode = 12;
 
   display.fillRect (10, 48, 200, 50, WHITE);  //erase the selected program text
   display.setCursor(10, 60);  //Display selected program
@@ -1692,6 +1791,7 @@ void FED3::SelectMode() {
     if (FEDmode == 9) display.print("Self-Stim");
     if (FEDmode == 10) display.print("Self-Stim (Rev)");
     if (FEDmode == 11) display.print("Timed feeding");
+    if (FEDmode == 12) display.print("Meal feeding");
     display.refresh();
   }
   
@@ -1783,6 +1883,7 @@ void FED3::ClassicMenu () {
   if (FEDmode == 9) display.print("Self-Stim");
   if (FEDmode == 10) display.print("Self-Stim (Rev)");
   if (FEDmode == 11) display.print("Timed feeding");
+  if (FEDmode == 12) display.print("Meal feeding");
   
   DisplayMouse();
   display.clearDisplay();

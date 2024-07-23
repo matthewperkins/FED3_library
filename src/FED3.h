@@ -65,6 +65,9 @@ This device includes hardware and code from:
 #define WHITE 1
 #define STEPS 2038
 
+// Timed Feeding Definitions:
+#define MAXNMEALS 6
+
 extern bool Left;
 
 class FED3 {
@@ -86,6 +89,20 @@ class FED3 {
         File configfile;    // Create another file object
         File startfile;     // Create another file object
         File stopfile;      // Create another file object
+        File NMealsFile;      // Create another file object
+        File maxNPelletFile;      // Create another file object
+        File mealStartfile0;      // Create another file object
+        File mealStartfile1;      // Create another file object
+        File mealStartfile2;      // Create another file object
+        File mealStartfile3;      // Create another file object
+        File mealStartfile4;      // Create another file object
+        File mealStartfile5;      // Create another file object
+        File mealEndfile0;      // Create another file object
+        File mealEndfile1;      // Create another file object
+        File mealEndfile2;      // Create another file object
+        File mealEndfile3;      // Create another file object
+        File mealEndfile4;      // Create another file object
+        File mealEndfile5;      // Create another file object
         char filename[21];  // Array for file name data logged to named in setup
         void logdata();
         void CreateFile();
@@ -122,6 +139,7 @@ class FED3 {
         void DisplayDateTime();
         void DisplayIndicators();
         void DisplayTimedFeeding();
+        void DisplayMealFeeding();
         void DisplayNoProgram();
         void DisplayMinPoke();
         void DisplayMouse();
@@ -169,21 +187,32 @@ class FED3 {
         void randomizeActivePoke(int max);
         int consecutive = 0;
         
+        //MHP functions
+        void CheckTime();
+
         //jam movements
-		bool RotateDisk(int steps);
+        bool RotateDisk(int steps);
         bool ClearJam();
         bool VibrateJam();
         bool MinorJam();
 
         //timed feeding variables
-        int timedStart; //hour to start the timed Feeding session, out of 24 hour clock
-        int timedEnd; //hour to start the timed Feeding session, out of 24 hour clock
+        // try setting this up for multiple meals
+        int mealStarts[MAXNMEALS];
+        int mealEnds[MAXNMEALS];
+        uint8_t timedStart; //hour to start the timed Feeding session, out of 24 hour clock
+        uint8_t timedEnd; //hour to start the timed Feeding session, out of 24 hour clock
+  //int timedStart; //hour to start the timed Feeding session, out of 24 hour clock
+  //int timedEnd; //hour to start the timed Feeding session, out of 24 hour clock
+        int NMeals;
+        int maxNPellet;
 
         // mode variables
         int FED;
         int FR = 1;
         bool DisplayPokes = true;
         bool DisplayTimed = false;
+        bool DisplayMeal = false;
         byte FEDmode = 1;
         byte previousFEDmode = FEDmode;
   
